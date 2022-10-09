@@ -1,18 +1,27 @@
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+
+
 const options = {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    if (selectedDates[0].getTime() <= new Date().getTime()){
+    if (selectedDates[0]<= new Date()){
       refs.startBtn.disabled = true;
+      Notify.failure("Please choose a date in the future");
     } else {
       refs.startBtn.disabled = false;
     };
   },
 };
+
+Notify.init({
+  position: 'center-top',
+  closeButton: false,
+});
 
 const refs = {
   days: document.querySelector('[data-days]'),
@@ -23,9 +32,42 @@ const refs = {
   dataTimePicker: document.querySelector('#datetime-picker'),
 };
 
-refs.startBtn.disabled = true;
+// refs.startBtn.disabled = true;
 
 flatpickr(refs.dataTimePicker, options);
+const dataPickr = new flatpickr(refs.dataTimePicker, options);
+
+
+
+refs.startBtn.addEventListener('click', onStart);
+function onStart() {
+  refs.startBtn.disabled = true;
+  const startTime = dataPickr.selectedDates[0];
+  console.log('startTime',startTime);
+  setInterval(() => {
+    const currentTime = Date.now();
+    console.log('currentTime', currentTime);
+    const deltaTime = startTime - currentTime;
+    console.log('deltaTime',deltaTime);
+    const time = convertMs(deltaTime);
+    
+    refs.days.textContent = time.days;
+    
+    refs.hours.textContent = time.hours;
+    
+    refs.minutes.textContent = time.minutes;
+    
+    refs.seconds.textContent = time.seconds;
+    
+  }, 1000);
+}
+
+function addPrevSymbol(value) {
+  return String(value).padStart(2, '0');
+}
+
+
+
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
@@ -35,27 +77,21 @@ function convertMs(ms) {
   const day = hour * 24;
 
   // Remaining days
-  const days = Math.floor(ms / day);
+  const days = addPrevSymbol(Math.floor(ms / day));
+  console.log('days',days);
   // Remaining hours
-  const hours = Math.floor((ms % day) / hour);
+  const hours = addPrevSymbol(Math.floor((ms % day) / hour));
+  console.log('hours',hours);
   // Remaining minutes
-  const minutes = Math.floor(((ms % day) % hour) / minute);
+  const minutes = addPrevSymbol(Math.floor(((ms % day) % hour) / minute));
+  console.log('minutes',minutes);
   // Remaining seconds
-  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+  const seconds = addPrevSymbol(Math.floor((((ms % day) % hour) % minute) / second));
+  console.log('seconds',seconds);
 
   return { days, hours, minutes, seconds };
 }
 
-
-
-// 1 добавить библиотеки
-// 2 инициализировать
-// 3 вибор дати
-// 4 добавить разметку
-//
-
-
 function onClick() {
   refs.days.innerHTML()
 }
-
